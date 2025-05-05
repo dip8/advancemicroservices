@@ -1,0 +1,46 @@
+server:
+  port: 2025
+
+spring:
+  application:
+    name: APIGATEWAY
+  cloud:
+    gateway:
+      routes:
+        - id: CustomerService
+          uri: lb://CustomerService
+          predicates:
+            - Path=/customers/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: CustomerService
+                fallbackuri: forward:/customerfallback
+
+        - id: ProductService
+          uri: lb://ProductService
+          predicates:
+            - Path=/products/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: ProductService
+                fallbackuri: forward:/productfallback
+
+        - id: OrderService
+          uri: lb://OrderService
+          predicates:
+            - Path=/orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: OrderService
+                fallbackuri: forward:/orderfallback
+
+hystrix:
+  command:
+    fallbackcmd:
+      execution:
+        isolation:
+          thread:
+            timeoutInMilliseconds: 4000
